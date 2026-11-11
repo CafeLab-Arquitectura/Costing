@@ -1,0 +1,38 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: costing-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: costing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: cafelabpassword123
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  costing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: costing-cafelab:latest
+    container_name: costing-service
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8084:8084"
+    environment:
+      - PORT=8084
+      - SPRING_APPLICATION_NAME=costing-cafelab
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/costing_db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=cafelabpassword123
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=cafelabpassword123
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - MANAGEMENT_SERVICE_URL=http://localhost:8080
+
+volumes:
+  pgdata:
